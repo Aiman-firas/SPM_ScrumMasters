@@ -100,6 +100,10 @@ public class SaveManager : MonoBehaviour
             {
                 currentScore = GridManagerForLoading.Instance.scoreCount;
             }
+            else if (FPGridManager.Instance != null)
+            {
+                currentScore = GridManagerForLoading.Instance.scoreCount;
+            }
             else
             {
                 Debug.LogError("No active Grid Manager found.");

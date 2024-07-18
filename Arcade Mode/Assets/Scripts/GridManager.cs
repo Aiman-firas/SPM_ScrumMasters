@@ -17,6 +17,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject uiCanvas;  // This will hold the reference to your Canvas
 
     public TMP_Text feedbackMessage; // Reference to a Text component used for feedback
+    public TMP_Text endMessage; // Reference to a Text component used for Game End
 
     public Dictionary<Vector2, Tile> _tiles;
     public Dictionary<Vector2, GameObject> _buildings;
@@ -68,6 +69,8 @@ public class GridManager : MonoBehaviour
         if (coinCount <= 0)
         {
             Debug.LogError("Not enough coins to build!");
+            feedbackMessage.text = "Not enough coins to build!";
+            feedbackMessage.color = Color.red;
             return;
         }
 
@@ -102,6 +105,8 @@ public class GridManager : MonoBehaviour
 
         // Calculate score and coins when the building is placed
         CalculateScoreAndGenerateCoins(newBuilding, position);
+
+        CheckGameEnd();
     }
 
     private void CalculateScoreAndGenerateCoins(GameObject newBuilding, Vector2 position)
@@ -112,12 +117,15 @@ public class GridManager : MonoBehaviour
         int localScore = 0;
         int localCoins = 0;
 
+        bool hasAdjacentBuildings = false;
+
         Vector2[] directions = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
         foreach (var dir in directions)
         {
             Vector2 adjacentPos = position + dir;
             if (_buildings.ContainsKey(adjacentPos))
             {
+                hasAdjacentBuildings = true;
                 Building adjacentBuilding = _buildings[adjacentPos].GetComponent<Building>();
                 if (adjacentBuilding == null) continue;
 
@@ -143,7 +151,6 @@ public class GridManager : MonoBehaviour
                         break;
 
                     case BuildingType.Industry:
-                        localScore += 1;
                         if (adjacentBuilding.buildingType == BuildingType.Residential)
                         {
                             localCoins += 1;
@@ -191,6 +198,12 @@ public class GridManager : MonoBehaviour
             }
         }
 
+        // Ensure Industry scores 1 point even without adjacent buildings on the first turn
+        if (buildingComponent.buildingType == BuildingType.Industry)
+        {
+            localScore += 1;
+        }
+
         // Update global counters and UI
         scoreCount += localScore;
         coinCount += localCoins;
@@ -200,7 +213,22 @@ public class GridManager : MonoBehaviour
 
     private int CalculateConnectedRoadScore(Vector2 roadPosition)
     {
-        int score = 0;
+        int score = 1; // Start with 1 to include the current road tile itself
+
+        // Check above
+        Vector2 abovePos = new Vector2(roadPosition.x, roadPosition.y + 1);
+        if (_buildings.ContainsKey(abovePos) && _buildings[abovePos].GetComponent<Building>().buildingType == BuildingType.Road)
+        {
+            return 0;
+        }
+
+        // Check below
+        Vector2 belowPos = new Vector2(roadPosition.x, roadPosition.y - 1);
+        if (_buildings.ContainsKey(belowPos) && _buildings[belowPos].GetComponent<Building>().buildingType == BuildingType.Road)
+        {
+            return 0;
+        }
+
         // Check left
         for (int x = (int)roadPosition.x - 1; x >= 0; x--)
         {
@@ -210,6 +238,7 @@ public class GridManager : MonoBehaviour
             else
                 break;
         }
+
         // Check right
         for (int x = (int)roadPosition.x + 1; x < _width; x++)
         {
@@ -220,8 +249,10 @@ public class GridManager : MonoBehaviour
                 break;
         }
 
-        return score + 0; // +1 for the current road tile itself
+        return score; // Return the total score including the current tile
     }
+
+
 
 
     public void DestroyBuilding(int x, int y)
@@ -246,6 +277,8 @@ public class GridManager : MonoBehaviour
 
         IncrementTurnCount();
         DecreaseCoinNum();
+
+        CheckGameEnd();
     }
 
 
@@ -285,7 +318,7 @@ public class GridManager : MonoBehaviour
         turnCount++;  // Increment the turn counter
         UpdateTurnCountUI();  // Update the UI with the new turn count
 
-        // Randomize the button selections at the start of each turn
+        //Randomize the button selections at the start of each turn
         if (uiCanvas != null)
         {
             ButtonManager buttonManager = uiCanvas.GetComponent<ButtonManager>();
@@ -394,5 +427,39 @@ public class GridManager : MonoBehaviour
         newBuilding.name = $"Tile {x} {y}";
         _buildings[position] = newBuilding;
 
+    }
+
+    private void CheckGameEnd()
+    {
+        // Check if the board is full
+        bool isBoardFull = true;
+        foreach (var tile in _tiles)
+        {
+            if (!_buildings.ContainsKey(tile.Key))
+            {
+                isBoardFull = false;
+                break;
+            }
+        }
+
+        // Check if the player has run out of coins
+        bool hasNoCoins = (coinCount <= 0);
+
+        // If the board is full or the player has no coins, end the game
+        if (isBoardFull || hasNoCoins)
+        {
+            EndGame();
+        }
+    }
+
+
+    private void EndGame()
+    {
+        // Display the final score
+        endMessage.text = "Game Over! Final Score: " + scoreCount;
+        endMessage.color = Color.green;
+
+        // Optionally, disable further actions in the game
+        // Disable build and destroy buttons, etc.
     }
 }

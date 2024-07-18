@@ -14,6 +14,10 @@ public static class UIManagerHelper
         {
             LoadingUIManager.Instance.SetInputFields(posX, posY);
         }
+        else if (FPUIManager.Instance != null)
+        {
+            FPUIManager.Instance.SetInputFields(posX, posY);
+        }
         else
         {
             Debug.LogError("No suitable UI manager found to handle input.");
