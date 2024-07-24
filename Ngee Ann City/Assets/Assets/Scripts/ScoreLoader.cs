@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// The ScoreLoader class is responsible for loading and displaying scores for the Arcade and FreePlay modes.
+/// </summary>
 public class ScoreLoader : MonoBehaviour
 {
     public TMP_Text arcadeScoreDisplay; // Reference to the Text prefab for Arcade scores

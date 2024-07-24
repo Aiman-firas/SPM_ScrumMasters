@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Manages scene changes and provides access to a singleton instance of the SceneChanger.
+/// </summary>
 public class SceneChanger : MonoBehaviour
 {
     private static SceneChanger _instance;
