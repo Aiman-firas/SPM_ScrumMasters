@@ -47,7 +47,7 @@ Create a fun and engaging city-building game that challenges players to optimize
 ### Installation
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/ngee-ann-city.git
+    [git clone https://github.com/Aiman-firas/SPM_ScrumMasters.git]
     ```
 2. Open the project in Unity:
     - Launch Unity Hub.
